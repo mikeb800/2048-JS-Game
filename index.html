@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>2048</title>
+	<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+
+<div class="main">
+	<div class="mainField" id = "mField"> 
+		<div class="field" id = "f11"> 1 </div>  
+		<div class="field" id = "f12">2 </div>
+		<div class="field" id = "f13">3</div>
+		<div class="field" id = "f14">4</div>
+		<div class="field" id = "f21">5 </div>
+		<div class="field" id = "f22">6 </div>
+		<div class="field" id = "f23">7</div>
+		<div class="field" id = "f24">8 </div>   
+		<div class="field" id = "f31">2048</div>
+		<div class="field" id = "f32"> 1 </div>  
+		<div class="field" id = "f33">2 </div>
+		<div class="field" id = "f34">3</div>
+		<div class="field" id = "f41">4</div>
+		<div class="field" id = "f42">5 </div>
+		<div class="field" id = "f43">6 </div>
+		<div class="field notempty" id = "f44">7</div>
+	</div>
+
+	<div class="stats">  
+	  <button name="newbtn" class="btn"> New </button> <br> 
+	  <span class="statMax" id="StatMaxId"> </span> <br>
+	  <span class="statMax" id="Score"> </span> <br>
+	  <span class="GameOver" id="GameOver"> Game Over </span>
+
+
+	</div>
+
+	<div class="debug" id= "debugField">    </div>		
+</div>
+
+
+<script type="text/javascript" >
+    var mainField1 =  document.getElementById("mField");
+    var debugField1 =  document.getElementById("debugField");
+    var ScoreField1 =  document.getElementById("Score");
+    var GameOverField1 =  document.getElementById("GameOver");
+    var Score = 0;
+    var Colors = ["#"];
+    var GameOver = false;
+
+    var Fields = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+
+	var redraw = function (){
+		var max = 0;
+			for (var i = 1; i <= 4; i++) {
+				for (var j = 1; j <=4; j++) {
+					var field1 = document.getElementById("f"+i+j);
+					if( field1)
+					{
+						val = Fields[i-1][j-1];
+						if(val>0)
+						{
+						  field1.innerHTML = val;
+						  if(!field1.classList.contains("notempty"))
+						   field1.classList.add("notempty");
+						  if(val>max)
+						  	max = val;
+						}
+						else
+						{
+						  field1.innerHTML = '0';
+						  field1.classList.remove("notempty");
+						}
+					}
+				}
+			}
+		var statMax1 = document.getElementById("StatMaxId");
+		if(statMax1) statMax1.innerHTML ="Max: "+ max;
+		if(ScoreField1) ScoreField1.innerHTML ="Score: "+ Score;
+		if(GameOverField1)
+		{
+			if(GameOver)
+				GameOverField1.style.display = "block";
+			else
+				GameOverField1.style.display = "none";
+
+		}
+	}
+	var addRandom = function () {
+		added = false;
+		for (var k = 0; k < 200; k++) {
+             i = getRandomInt(0, 3);
+             j = getRandomInt(0, 3);
+             
+             if(Fields[i][j]==0)
+             {
+             	 Fields[i][j] = Math.random()*100 > 80 ? 4 : 2;
+             	 debugField1.innerHTML +=' added: '+Fields[i][j] +'in ['+i+':'+j+']';
+                 added = true;
+                 break;
+             }
+		}
+		return added;
+	}
+	// использование Math.round() даст неравномерное распределение!
+	function getRandomInt(min, max)
+	{
+  		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+
+	var newGame = function (){
+		Fields = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];	
+		Score = 0;	
+		GameOver = false;		
+		addRandom();
+		redraw();
+	}
+	var maxIter = 7;
+	var Up =  function(){
+		var wasMove = -1;	
+		
+		for (var j = 0; j < 4; j++) {
+			begI = 1; //++	
+			for (var k = 0; k < maxIter; k++) {
+				for (var i = begI; i < 4; i++) {
+				 	if(Fields[i-1][j]==0&&Fields[i][j]!=0)
+				 	{
+				 		Fields[i-1][j] = Fields[i][j];
+				 		Fields[i][j] = 0;
+				 		wasMove = (wasMove == -1) ? 0: wasMove;
+				 	} else  if(Fields[i][j]!=0&&Fields[i-1][j]==Fields[i][j])
+				 		{
+				 			Fields[i-1][j] *= 2;
+				 			Fields[i][j] = 0;
+                            wasMove+= Fields[i-1][j];
+                            begI++;
+				 		}
+			    }
+			    if(begI>4) break;
+			}
+		}
+		return wasMove;
+	}
+
+	var Down =  function(){
+		var wasMove = -1;
+		
+		for (var j = 0; j < 4; j++) {
+			begI = 2;	//++
+			for (var k = 0; k < maxIter; k++) {				
+				for (var i = begI; i >=0; i--) {
+				 	if(Fields[i+1][j]==0&&Fields[i][j]!=0)
+				 	{
+				 		Fields[i+1][j] = Fields[i][j];
+				 		Fields[i][j] = 0;
+				 		wasMove = (wasMove == -1) ? 0: wasMove;
+				 	} else  if(Fields[i][j]!=0&&Fields[i+1][j]==Fields[i][j])
+				 		{
+				 			Fields[i+1][j] *= 2;
+				 			Fields[i][j] = 0;
+                            wasMove+= Fields[i+1][j];
+                            begI--;
+				 		}
+			    }
+			    if(begI<0) break;
+			}
+		}
+		return wasMove;
+	}
+
+	var Left =  function(){
+		var wasMove = -1;	
+		
+		for (var i = 0; i < 4; i++) {
+			begJ = 1;	//++
+			for (var k = 0; k < maxIter; k++) {				
+				for (var j = begJ; j <4; j++) {
+				 	if(Fields[i][j-1]==0&&Fields[i][j]!=0)
+				 	{
+				 		Fields[i][j-1] = Fields[i][j];
+				 		Fields[i][j] = 0;
+				 		wasMove = (wasMove == -1) ? 0: wasMove;
+				 	} else  if(Fields[i][j]!=0&&Fields[i][j-1]==Fields[i][j])
+				 		{
+				 			Fields[i][j-1] *= 2;
+				 			Fields[i][j] = 0;
+                            wasMove+= Fields[i][j-1];
+                            begJ++;
+				 		}
+			    }
+			    if(begJ>4) break;
+			}
+		}
+		return wasMove;
+	}
+	var Right =  function(){
+		var wasMove = -1;		
+		for (var i = 0; i < 4; i++) {
+			begJ = 2;	//++
+			for (var k = 0; k < maxIter; k++) {				
+				for (var j = begJ; j >=0; j--) {
+				 	if(Fields[i][j+1]==0&&Fields[i][j]!=0)
+				 	{
+				 		Fields[i][j+1] = Fields[i][j];
+				 		Fields[i][j] = 0;
+				 		wasMove = (wasMove == -1) ? 0: wasMove;
+				 	} else  if(Fields[i][j]!=0&&Fields[i][j+1]==Fields[i][j])
+				 		{
+				 			Fields[i][j+1] *= 2;
+				 			Fields[i][j] = 0;
+                            wasMove+= Fields[i][j+1];
+                            begJ--;
+				 		}
+			    }
+			    if(begJ<0) break;
+			}
+		}
+		return wasMove;
+	}
+
+	var lastKey = -999990;
+	addEventListener("keydown", function(event) {
+
+		if(lastKey!=event.keyCode)
+		{
+			var result1 = 0;
+			switch(event.keyCode)
+			{
+				case 38:  //up
+				  result1 = Up();
+				  debugField1.innerHTML += " upresult:"+result1;
+				 break; 
+				case 40:  //down
+				  result1 = Down();
+				  debugField1.innerHTML += " downresult:"+result1;
+
+				 break; 
+				case 37:  //left
+				 result1 = Left();
+				 debugField1.innerHTML += " leftresult:"+result1;
+
+				 break; 
+				 case 39:  //right
+				 result1 = Right();
+				 debugField1.innerHTML += " rightresult:"+result1;
+				 break; 
+			}
+			if(result1>=0)
+			{
+				Score+=result1;
+				if(!addRandom())
+					GameOver = true;
+				redraw();
+			}
+			lastKey=event.keyCode;			
+		}
+      
+       //debugField1.innerText = event.keyCode;
+       
+    });
+    addEventListener("keyup", function(event) {
+       lastKey = -999990;
+    });
+
+
+	  var button = document.querySelector("button");
+      button.addEventListener("click", function() {
+         //alert("Кнопка нажата.");
+         newGame();
+      });
+
+
+	newGame();
+
+</script>
+
+</body>
+</html>
